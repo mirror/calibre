@@ -1504,6 +1504,7 @@ class LibraryDatabase2(LibraryDatabase, SchemaUpgrade, CustomColumns):
         self.refresh_ids([id])
         if notify:
             self.notify('metadata', [id])
+        run_plugins_on_postimport(self, id, format)
         return True
 
     def save_original_format(self, book_id, fmt, notify=True):
