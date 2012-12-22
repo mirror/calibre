@@ -532,6 +532,10 @@ class LibraryDatabase2(LibraryDatabase, SchemaUpgrade, CustomColumns):
             self.refresh()
             self.refresh_format_cache()
         self.last_update_check = utcnow()
+        
+    def check_if_standard_metadata_modified(self, index, index_is_id, other):
+        mi = self.get_metadata(index, index_is_id=index_is_id, get_cover=False)
+        return mi.get_all_standard_metadata(True) != other.get_all_standard_metadata(True)
 
     def path(self, index, index_is_id=False):
         'Return the relative path to the directory containing this books files as a unicode string.'
@@ -3297,6 +3301,9 @@ class LibraryDatabase2(LibraryDatabase, SchemaUpgrade, CustomColumns):
         if notify:
             self.notify('metadata', [id_])
 
+    def clear_identifiers(self, id_):
+        self.set_identifiers(id_, {})
+            
     def set_isbn(self, id_, isbn, notify=True, commit=True):
         self.set_identifier(id_, 'isbn', isbn, notify=notify, commit=commit)
 

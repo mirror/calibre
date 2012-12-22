@@ -77,8 +77,8 @@ class ConfirmDialog(QDialog):
         l.setColumnStretch(1, 100)
 
         self.identify = self.covers = True
-        self.bb = QDialogButtonBox(QDialogButtonBox.Cancel)
-        self.bb.rejected.connect(self.reject)
+        self.clear = False
+        self.bb = QDialogButtonBox()
         b = self.bb.addButton(_('Download only &metadata'),
                 self.bb.AcceptRole)
         b.clicked.connect(self.only_metadata)
@@ -87,20 +87,36 @@ class ConfirmDialog(QDialog):
                 self.bb.AcceptRole)
         b.clicked.connect(self.only_covers)
         b.setIcon(QIcon(I('default_cover.png')))
-        b = self.b = self.bb.addButton(_('&Configure download'), self.bb.ActionRole)
-        b.setIcon(QIcon(I('config.png')))
-        b.clicked.connect(partial(show_config, parent, self))
-        l.addWidget(self.bb, 1, 0, 1, 2)
-        b = self.bb.addButton(_('Download &both'),
-                self.bb.AcceptRole)
+        
+        self.bb2 = QDialogButtonBox()
+        b = self.bb2.addButton(_('Download &both'),
+                self.bb2.AcceptRole)
         b.clicked.connect(self.accept)
         b.setDefault(True)
         b.setAutoDefault(True)
         b.setIcon(QIcon(I('ok.png')))
+        b = self.bb2.addButton(_('Clear &IDs and download both'),
+                self.bb2.AcceptRole)
+        b.clicked.connect(self.clear_ids)
+        b.setIcon(QIcon(I('trash.png')))
 
+        self.bb3 = QDialogButtonBox(QDialogButtonBox.Cancel)
+        self.bb3.rejected.connect(self.reject)
+        b = self.b = self.bb3.addButton(_('&Configure download'), self.bb3.ActionRole)
+        b.setIcon(QIcon(I('config.png')))
+        b.clicked.connect(partial(show_config, parent, self))
+        
+        l.addWidget(self.bb, 1, 0, 1, 2, Qt.AlignHCenter)
+        l.addWidget(self.bb2, 2, 0, 1, 2, Qt.AlignHCenter)
+        l.addWidget(self.bb3, 3, 0, 1, 2, Qt.AlignHCenter)
+        
         self.resize(self.sizeHint())
         b.setFocus(Qt.OtherFocusReason)
 
+    def clear_ids(self):
+        self.clear = True
+        self.accept()
+        
     def only_metadata(self):
         self.covers = False
         self.accept()
@@ -118,20 +134,34 @@ def split_jobs(ids, batch_size=100):
         ids = ids[batch_size:]
     return ans
 
-def start_download(gui, ids, callback, ensure_fields=None):
-    d = ConfirmDialog(ids, gui)
-    ret = d.exec_()
-    d.b.clicked.disconnect()
-    if ret != d.Accepted:
-        return
+def start_download(gui, ids, callback, ensure_fields=None, confirm=True, clear=False, identify=True, covers=True, callback_done=None):
+    if confirm:
+        d = ConfirmDialog(ids, gui)
+        ret = d.exec_()
+        d.b.clicked.disconnect()
+        if ret != d.Accepted:
+            return
+        identify = d.identify
+        covers = d.covers
+        clear  = d.clear
     tf = PersistentTemporaryFile('_metadata_bulk.log')
     tf.close()
 
+    # clear ids
+    if clear:
+        for id in ids:
+            gui.current_db.clear_identifiers(id)
+    
     job = Job('metadata bulk download',
         _('Download metadata for %d books')%len(ids),
-        download, (ids, tf.name, gui.current_db, d.identify, d.covers,
+        download, (ids, tf.name, gui.current_db, identify, covers,
             ensure_fields), {}, callback)
     job.download_debug_log = tf.name
+    job.callback_done = callback_done
+    # save current metadata for modification check
+    job.old_metadata = {}
+    for id in ids:
+        job.old_metadata[id] = gui.current_db.get_metadata(id, index_is_id=True, get_cover=False)
     gui.job_manager.run_threaded_job(job)
     gui.status_bar.show_message(_('Metadata download started'), 3000)
 

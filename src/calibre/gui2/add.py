@@ -9,7 +9,7 @@ from PyQt4.Qt import QThread, QObject, Qt, QProgressDialog, pyqtSignal, QTimer
 
 from calibre.gui2.dialogs.progress import ProgressDialog
 from calibre.gui2 import (error_dialog, info_dialog, gprefs,
-        warning_dialog, available_width)
+        warning_dialog, available_width, Dispatcher)
 from calibre.ebooks.metadata.opf2 import OPF
 from calibre.ebooks.metadata import MetaInformation
 from calibre.constants import preferred_encoding, filesystem_encoding, DEBUG
@@ -111,15 +111,49 @@ class DBAdder(QObject): # {{{
         self.auto_convert_books = set()
 
     def end(self):
+        from calibre.ebooks.metadata.sources.base import msprefs        
+        callback_done = None
+        ids_add_metadata = set()
+    
+        # check if metadata should be added
+        if msprefs['auto_overwrite'] or msprefs['auto_clear']:
+            ids_add_metadata = self.auto_convert_books
+            dl_identify = True
+            dl_covers = True
+        
+        if msprefs['auto_add'] and not (msprefs['auto_overwrite'] or msprefs['auto_clear']):
+            dl_identify = False
+            dl_covers = False
+            for id in self.auto_convert_books:
+                mi = self.db.get_metadata(id, index_is_id=True, get_cover=True)
+                missing_identify = bool(not (mi and mi.isbn and mi.pubdate and mi.comments))
+                missing_cover = bool(not (mi and mi.cover))
+                if missing_identify: dl_identify = True
+                if missing_cover: dl_covers = True
+                if missing_identify or missing_cover:
+                    ids_add_metadata.add(id)
+        
+        # auto convert now or after metadata is added
         if (gprefs['manual_add_auto_convert'] and
                 self.auto_convert_books):
+            if ids_add_metadata:
+                callback_done = Dispatcher(self.auto_convert)
+            else:
+                self.auto_convert()
+
+        if ids_add_metadata:
             from calibre.gui2.ui import get_gui
             gui = get_gui()
-            gui.iactions['Convert Books'].auto_convert_auto_add(
-                self.auto_convert_books)
+            gui.iactions['Edit Metadata'].download_metadata(ids_add_metadata, confirm=False, clear=msprefs['auto_clear'], identify=dl_identify, covers=dl_covers, callback_done=callback_done)
 
         self.input_queue.put((None, None, None))
 
+    def auto_convert(self):
+        from calibre.gui2.ui import get_gui
+        gui = get_gui()
+        gui.iactions['Convert Books'].auto_convert_auto_add(
+            self.auto_convert_books)
+            
     def start(self):
         try:
             id, opf, cover = self.input_queue.get_nowait()

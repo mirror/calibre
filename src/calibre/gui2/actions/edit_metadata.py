@@ -67,18 +67,18 @@ class EditMetadataAction(InterfaceAction):
         self.action_merge.setEnabled(enabled)
 
     # Download metadata {{{
-    def download_metadata(self, ids=None, ensure_fields=None):
+    def download_metadata(self, ids=None, ensure_fields=None, confirm=True, clear=False, identify=True, covers=True, callback_done=None):
+        db = self.gui.library_view.model().db
         if ids is None:
             rows = self.gui.library_view.selectionModel().selectedRows()
             if not rows or len(rows) == 0:
                 return error_dialog(self.gui, _('Cannot download metadata'),
                             _('No books selected'), show=True)
-            db = self.gui.library_view.model().db
             ids = [db.id(row.row()) for row in rows]
         from calibre.gui2.metadata.bulk_download import start_download
         start_download(self.gui, ids,
                 Dispatcher(self.metadata_downloaded),
-                ensure_fields=ensure_fields)
+                ensure_fields=ensure_fields, confirm=confirm, clear=clear, identify=identify, covers=covers, callback_done=callback_done)
 
     def cleanup_bulk_download(self, tdir, *args):
         try:
@@ -87,6 +87,11 @@ class EditMetadataAction(InterfaceAction):
             pass
 
     def metadata_downloaded(self, job):
+        self._metadata_downloaded(job)
+        if job.callback_done:
+            job.callback_done()
+
+    def _metadata_downloaded(self, job):
         if job.failed:
             self.gui.job_exception(job, dialog_title=_('Failed to download metadata'))
             return
@@ -118,16 +123,21 @@ class EditMetadataAction(InterfaceAction):
                     'after updating metadata')
 
         payload = (id_map, tdir, log_file, lm_map,
-                failed_ids.union(failed_covers))
-        self.gui.proceed_question(self.apply_downloaded_metadata, payload,
-                log_file, _('Download log'), _('Download complete'), msg,
-                det_msg=det_msg, show_copy_button=show_copy_button,
-                cancel_callback=partial(self.cleanup_bulk_download, tdir),
-                log_is_file=True, checkbox_msg=checkbox_msg,
-                checkbox_checked=False)
+                failed_ids.union(failed_covers), job.old_metadata)
+              
+        from calibre.ebooks.metadata.sources.base import msprefs
+        if msprefs['confirm']:
+            self.gui.proceed_question(self.apply_downloaded_metadata, payload,
+                    log_file, _('Download log'), _('Download complete'), msg,
+                    det_msg=det_msg, show_copy_button=show_copy_button,
+                    cancel_callback=partial(self.cleanup_bulk_download, tdir),
+                    log_is_file=True, checkbox_msg=checkbox_msg,
+                    checkbox_checked=False)
+        else:
+            self.apply_downloaded_metadata(payload)
 
     def apply_downloaded_metadata(self, payload, *args):
-        good_ids, tdir, log_file, lm_map, failed_ids = payload
+        good_ids, tdir, log_file, lm_map, failed_ids, old_metadata = payload
         if not good_ids:
             return
 
@@ -135,8 +145,7 @@ class EditMetadataAction(InterfaceAction):
         db = self.gui.current_db
 
         for i in good_ids:
-            lm = db.metadata_last_modified(i, index_is_id=True)
-            if lm is not None and lm_map[i] is not None and lm > lm_map[i]:
+            if db.check_if_standard_metadata_modified(i, index_is_id=True, other=old_metadata[i]):
                 title = db.title(i, index_is_id=True)
                 authors = db.authors(i, index_is_id=True)
                 if authors:
