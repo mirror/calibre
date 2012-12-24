@@ -74,7 +74,7 @@ class DateDelegate(QStyledItemDelegate): # {{{
         d = val.toDateTime()
         if d <= UNDEFINED_QDATETIME:
             return ''
-        return format_date(qt_to_dt(d, as_utc=False), self.format)
+        return format_date(d, self.format)
 
     def createEditor(self, parent, option, index):
         qde = QStyledItemDelegate.createEditor(self, parent, option, index)
@@ -96,9 +96,7 @@ class PubDateDelegate(QStyledItemDelegate): # {{{
 
     def displayText(self, val, locale):
         d = val.toDateTime()
-        if d <= UNDEFINED_QDATETIME:
-            return ''
-        return format_date(qt_to_dt(d, as_utc=False), self.format)
+        return format_date(d, self.format)
 
     def createEditor(self, parent, option, index):
         qde = QStyledItemDelegate.createEditor(self, parent, option, index)

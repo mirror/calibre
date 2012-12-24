@@ -12,6 +12,9 @@ from functools import partial
 
 from dateutil.tz import tzlocal, tzutc
 
+from PyQt4.Qt import Qt
+from PyQt4.QtCore import QDate, QDateTime
+
 from calibre import strftime
 
 class SafeLocalTimeZone(tzlocal):
@@ -45,6 +48,8 @@ local_tz = _local_tz = SafeLocalTimeZone()
 
 UNDEFINED_DATE = datetime(101,1,1, tzinfo=utc_tz)
 DEFAULT_DATE = datetime(2000,1,1, tzinfo=utc_tz)
+ISO_DATE = "yyyy-MM-dd"
+ISO_DATETIME = "yyyy-MM-ddThh:mm:ss.zzzZ"
 
 def is_date_undefined(qt_or_dt):
     d = qt_or_dt
@@ -69,7 +74,20 @@ def parse_date(date_string, assume_utc=False, as_utc=True, default=None):
 
     :param default: Missing fields are filled in from default. If None, the
     current date is used.
-    '''
+    '''    
+    if date_string[0] == "-":
+        neg = "-"
+    else:
+        neg = ""    
+    if len(date_string) < 12:
+        fmt = neg + ISO_DATE
+    else:
+        fmt = neg + ISO_DATETIME
+    d = QDateTime.fromString(date_string, fmt)
+    if len(neg) > 0:
+        d = d.addYears(-d.date().year()*2+1)
+    return d
+    
     from dateutil.parser import parse
     if not date_string:
         return UNDEFINED_DATE
@@ -88,6 +106,7 @@ def parse_only_date(raw, assume_utc=True):
     guarantees that the month and year are always correct in all timezones, and
     the day is at most one day wrong.
     '''
+    return parse_date(raw, default=default, assume_utc=assume_utc)
     f = utcnow if assume_utc else now
     default = f().replace(hour=0, minute=0, second=0, microsecond=0,
             day=15)
@@ -112,6 +131,18 @@ def dt_factory(time_t, assume_utc=False, as_utc=True):
         dt = dt.replace(tzinfo=_utc_tz if assume_utc else _local_tz)
     return dt.astimezone(_utc_tz if as_utc else _local_tz)
 
+def dt_to_qt(dt, as_utc=True):
+    if not dt:
+        return dt
+    if hasattr(dt, 'toString'):
+        return dt
+    from PyQt4.QtCore import QDateTime
+    qd = QDateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, Qt.UTC)
+    if as_utc:
+        return qd
+    else:
+        return qd.toLocalTime()
+    
 def qt_to_dt(qdate_or_qdatetime, as_utc=True):
     from PyQt4.Qt import Qt
     o = qdate_or_qdatetime
@@ -132,15 +163,11 @@ def fromordinal(day, as_utc=True):
     return datetime.fromordinal(day).replace(
             tzinfo=_utc_tz if as_utc else _local_tz)
 
-def isoformat(date_time, assume_utc=False, as_utc=True, sep='T'):
-    if not hasattr(date_time, 'tzinfo'):
-        return unicode(date_time.isoformat())
-    if date_time.tzinfo is None:
-        date_time = date_time.replace(tzinfo=_utc_tz if assume_utc else
-                _local_tz)
-    date_time = date_time.astimezone(_utc_tz if as_utc else _local_tz)
-    # str(sep) because isoformat barfs with unicode sep on python 2.x
-    return unicode(date_time.isoformat(str(sep)))
+def isoformat(date_time, assume_utc=False, as_utc=True, sep='T', time=False):
+    if time:
+        return unicode(date_time.toString(ISO_DATETIME))
+    else:
+        return unicode(date_time.toString(ISO_DATE))
 
 def as_local_time(date_time, assume_utc=True):
     if not hasattr(date_time, 'tzinfo'):
@@ -159,10 +186,10 @@ def as_utc(date_time, assume_utc=True):
     return date_time.astimezone(_utc_tz)
 
 def now():
-    return datetime.now().replace(tzinfo=_local_tz)
+    return isoformat(QDateTime.currentDateTime(), time=True)
 
 def utcnow():
-    return datetime.utcnow().replace(tzinfo=_utc_tz)
+    return isoformat(QDateTime.currentDateTimeUtc(), time=True)
 
 def utcfromtimestamp(stamp):
     try:
@@ -235,10 +262,12 @@ def fd_repl_func(dt, strf, ampm, mo):
     return fd_function_index[s[0]](dt, strf, ampm, s)
 
 def format_date(dt, format, assume_utc=False, as_utc=False):
-    ''' Return a date formatted as a string using a subset of Qt's formatting codes '''
+    ''' Return a date formatted as a string '''
     if not format:
         format = 'dd MMM yyyy'
 
+    return dt.toString(format)
+        
     if not isinstance(dt, datetime):
         dt = datetime.combine(dt, time())
 
