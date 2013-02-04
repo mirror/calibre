@@ -667,7 +667,6 @@ class Win32Freeze(Command, WixMixIn):
 
     def add_to_zipfile(self, zf, name, base, exclude=frozenset()):
         abspath = self.j(base, name)
-        name = name.replace(os.sep, '/')
         if name in self.zf_names:
             raise ValueError('Already added %r to zipfile [%r]'%(name, abspath))
         zinfo = zipfile.ZipInfo(filename=name, date_time=self.zf_timestamp)
@@ -675,8 +674,6 @@ class Win32Freeze(Command, WixMixIn):
         if os.path.isdir(abspath):
             if not os.listdir(abspath):
                 return
-            zinfo.external_attr = 0700 << 16
-            zf.writestr(zinfo, '')
             for x in os.listdir(abspath):
                 if x not in exclude:
                     self.add_to_zipfile(zf, name + os.sep + x, base)
