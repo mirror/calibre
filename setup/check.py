@@ -95,11 +95,7 @@ class Check(Command):
                     errors = True
                     self.report_errors(w)
             else:
-                try:
-                    subprocess.check_call(['coffee', '-c', '-p', f],
-                            stdout=open(os.devnull, 'wb'))
-                except:
-                    errors = True
+                subprocess.check_call(['coffee', '-c', '-p', f], stdout=open(os.devnull, 'wb'))
             if errors:
                 cPickle.dump(cache, open(self.CACHE, 'wb'), -1)
                 subprocess.call(['gvim', '-S',
