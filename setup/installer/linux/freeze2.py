@@ -238,7 +238,10 @@ class LinuxFreeze(Command):
 
     def create_tarfile(self):
         self.info('Creating archive...')
-        dist = os.path.join(self.d(self.SRC), 'dist',
+        dest = 'dist'
+        if not os.path.exists(dest):
+            os.makedirs(dest)
+        dist = os.path.join(self.d(self.SRC), dest,
             '%s-%s-%s.tar.bz2'%(__appname__, __version__, arch))
         with tarfile.open(dist, mode='w:bz2',
                     format=tarfile.PAX_FORMAT) as tf:
