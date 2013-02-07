@@ -78,7 +78,7 @@ class Worker(Thread):
             tdir = tempfile.mkdtemp(dir=self.tdir)
             try:
                 fork_job('calibre.ebooks.metadata.meta',
-                        'forked_read_metadata', (f, tdir), no_output=True)
+                        'forked_read_metadata', (f, tdir))
             except WorkerError as e:
                 prints('Failed to read metadata from:', fname)
                 prints(e.orig_tb)

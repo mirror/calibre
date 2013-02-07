@@ -417,7 +417,7 @@ class IdentifyWorker(Thread): # {{{
                 res = fork_job(
                         'calibre.ebooks.metadata.sources.worker',
                         'single_identify', (self.title, self.authors,
-                            self.identifiers), no_output=True, abort=self.abort)
+                            self.identifiers), abort=self.abort)
                 self.results, covers, caches, log_dump = res['result']
                 self.results = [OPF(BytesIO(r), basedir=os.getcwdu(),
                     populate_spine=False).to_book_metadata() for r in self.results]
@@ -594,8 +594,7 @@ class CoverWorker(Thread): # {{{
                 res = fork_job('calibre.ebooks.metadata.sources.worker',
                     'single_covers',
                     (self.title, self.authors, self.identifiers, self.caches,
-                        tdir),
-                    no_output=True, abort=self.abort)
+                        tdir), abort=self.abort)
                 self.log.append_dump(res['result'])
             finally:
                 self.keep_going = False

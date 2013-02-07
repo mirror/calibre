@@ -84,7 +84,7 @@ def communicate(ans, worker, listener, args, timeout=300, heartbeat=None,
     ans['result'] = cw.res['result']
 
 def fork_job(mod_name, func_name, args=(), kwargs={}, timeout=300, # seconds
-        cwd=None, priority='normal', env={}, no_output=False, heartbeat=None,
+        cwd=None, priority='normal', env={}, heartbeat=None,
         abort=None, module_is_source_code=False):
     '''
     Run a job in a worker process. A job is simply a function that will be
@@ -112,9 +112,6 @@ def fork_job(mod_name, func_name, args=(), kwargs={}, timeout=300, # seconds
 
     :param env: Extra environment variables to set for the worker process
 
-    :param no_output: If True, the stdout and stderr of the worker process are
-    discarded
-
     :param heartbeat: If not None, it is used to check if the worker has hung,
     instead of a simple timeout. It must be a callable that takes no
     arguments and returns True or False. The worker will be assumed to have
@@ -132,7 +129,6 @@ def fork_job(mod_name, func_name, args=(), kwargs={}, timeout=300, # seconds
     :return: A dictionary with the keys result and stdout_stderr. result is the
     return value of the function (it must be picklable). stdout_stderr is the
     path to a file that contains the stdout and stderr of the worker process.
-    If you set no_output=True, then this will not be present.
     '''
 
     ans = {'result':None, 'stdout_stderr':None}
@@ -162,13 +158,6 @@ def fork_job(mod_name, func_name, args=(), kwargs={}, timeout=300, # seconds
         t = Thread(target=w.kill)
         t.daemon=True
         t.start()
-        if no_output:
-            try:
-                os.remove(w.log_path)
-            except:
-                pass
-    if not no_output:
-        ans['stdout_stderr'] = w.log_path
     return ans
 
 def compile_code(src):

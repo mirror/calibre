@@ -350,7 +350,7 @@ class AZW3Container(Container):
         try:
             opf_path, obfuscated_fonts = fork_job(
             'calibre.ebooks.oeb.polish.container', 'do_explode',
-            args=(pathtoazw3, tdir), no_output=True)['result']
+            args=(pathtoazw3, tdir))['result']
         except WorkerError as e:
             log(e.orig_tb)
             raise InvalidMobi('Failed to explode MOBI')
