@@ -7,7 +7,7 @@ __license__   = 'GPL v3'
 __copyright__ = '2011, Kovid Goyal <kovid@kovidgoyal.net>'
 __docformat__ = 'restructuredtext en'
 
-import time
+import time, traceback
 from datetime import datetime
 from Queue import Queue, Empty
 from threading import Thread
@@ -41,6 +41,7 @@ class Worker(Thread):
         try:
             self.plugin.identify(self.log, self.rq, self.abort, **self.kwargs)
         except:
+            traceback.print_exc()
             self.log.exception('Plugin', self.plugin.name, 'failed')
         self.plugin.dl_time_spent = time.time() - start
 

@@ -7,7 +7,7 @@ __license__   = 'GPL v3'
 __copyright__ = '2012, Kovid Goyal <kovid@kovidgoyal.net>'
 __docformat__ = 'restructuredtext en'
 
-import os
+import os, traceback
 from threading import Event, Thread
 from Queue import Queue, Empty
 from io import BytesIO
@@ -68,7 +68,7 @@ def main(do_identify, covers, metadata, ensure_fields, tdir):
                 results = identify(log, Event(), title=title, authors=authors,
                     identifiers=identifiers)
             except:
-                pass
+                traceback.print_exc()
             if results:
                 all_failed = False
                 mi = merge_result(mi, results[0], ensure_fields=ensure_fields)
