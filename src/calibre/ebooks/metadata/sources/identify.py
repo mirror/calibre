@@ -322,6 +322,8 @@ class ISBNMerge(object):
             if min_date.year < 3000:
                 ans.pubdate = min_date
 
+        ans.pubdate = r.pubdate
+                
         # Identifiers
         for r in results:
             ans.identifiers.update(r.identifiers)
@@ -495,8 +497,6 @@ def identify(log, abort, # {{{
     max_tags = msprefs['max_tags']
     for r in results:
         r.tags = r.tags[:max_tags]
-        if getattr(r.pubdate, 'year', 2000) <= UNDEFINED_DATE.year:
-            r.pubdate = None
 
     if msprefs['swap_author_names']:
         for r in results:

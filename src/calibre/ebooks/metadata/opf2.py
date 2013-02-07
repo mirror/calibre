@@ -1440,7 +1440,7 @@ def metadata_to_opf(mi, as_string=True, default_lang=None):
     for au in mi.authors:
         factory(DC('creator'), au, mi.author_sort, 'aut')
     factory(DC('contributor'), mi.book_producer, __appname__, 'bkp')
-    if hasattr(mi.pubdate, 'isoformat'):
+    if hasattr(mi.pubdate, 'toString'):
         factory(DC('date'), isoformat(mi.pubdate))
     if hasattr(mi, 'category') and mi.category:
         factory(DC('type'), mi.category)
@@ -1468,7 +1468,7 @@ def metadata_to_opf(mi, as_string=True, default_lang=None):
         meta('series_index', mi.format_series_index())
     if mi.rating is not None:
         meta('rating', str(mi.rating))
-    if hasattr(mi.timestamp, 'isoformat'):
+    if hasattr(mi.timestamp, 'toString'):
         meta('timestamp', isoformat(mi.timestamp))
     if mi.publication_type:
         meta('publication_type', mi.publication_type)
