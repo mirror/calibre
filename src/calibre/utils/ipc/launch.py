@@ -120,14 +120,12 @@ class Worker(object):
         if not hasattr(self, 'child'): return None
         return getattr(self.child, 'pid', None)
 
-    def close_log_file(self):
-        try:
-            self._file.close()
-        except:
-            pass
+    def print_output(self):
+        out, err = self.child.communicate()
+        print out, '\n', err
 
     def kill(self):
-        self.close_log_file()
+        self.print_output()
         try:
             if self.is_alive:
                 if iswindows:
@@ -198,12 +196,10 @@ class Worker(object):
             args['preexec_fn'] = partial(renice, niceness)
         ret = None
         if redirect_output:
-            self._file = PersistentTemporaryFile('_worker_redirect.log')
-            args['stdout'] = self._file._fd
+            args['stdout'] = subprocess.PIPE
             args['stderr'] = subprocess.STDOUT
             if iswindows:
                 args['stdin'] = subprocess.PIPE
-            ret = self._file.name
 
         if iswindows and 'stdin' not in args:
             # On windows when using the pythonw interpreter,
@@ -221,9 +217,5 @@ class Worker(object):
         self.child = subprocess.Popen(cmd, **args)
         if 'stdin' in args:
             self.child.stdin.close()
-
-        self.log_path = ret
-        return ret
-
 
 

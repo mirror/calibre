@@ -87,10 +87,6 @@ def get_metadata(stream, cover=True):
             prints(e.orig_tb)
             raise RuntimeError('Failed to run pdfinfo')
         info = res['result']
-        with open(res['stdout_stderr'], 'rb') as f:
-            raw = f.read().strip()
-            if raw:
-                prints(raw)
         if not info:
             raise ValueError('Could not read info dict from PDF')
         covpath = os.path.join(pdfpath, 'cover.jpg')

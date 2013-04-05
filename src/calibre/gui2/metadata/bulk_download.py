@@ -233,7 +233,7 @@ def download(all_ids, tf, db, do_identify, covers, ensure_fields,
             try:
                 ret = fork_job('calibre.ebooks.metadata.sources.worker', 'main',
                         (do_identify, covers, metadata, ensure_fields, tdir),
-                        abort=abort, heartbeat=heartbeat, no_output=True)
+                        abort=abort, heartbeat=heartbeat)
             except WorkerError as e:
                 if e.orig_tb:
                     raise Exception('Failed to download metadata. Original '

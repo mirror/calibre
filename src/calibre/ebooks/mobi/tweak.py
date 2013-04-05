@@ -69,7 +69,7 @@ def explode(path, dest, question=lambda x:True):
                 return None
 
     return fork_job('calibre.ebooks.mobi.tweak', 'do_explode', args=(path,
-            dest), no_output=True)['result']
+            dest))['result']
 
 def set_cover(oeb):
     if 'cover' not in oeb.guide or oeb.metadata['cover']: return
@@ -96,7 +96,6 @@ def rebuild(src_dir, dest_path):
         raise ValueError('No OPF file found in %s'%src_dir)
     opf = opf[0]
     # For debugging, uncomment the following line
-    # def fork_job(a, b, args=None, no_output=True): do_rebuild(*args)
-    fork_job('calibre.ebooks.mobi.tweak', 'do_rebuild', args=(opf, dest_path),
-            no_output=True)
+    # def fork_job(a, b, args=None): do_rebuild(*args)
+    fork_job('calibre.ebooks.mobi.tweak', 'do_rebuild', args=(opf, dest_path))
 
