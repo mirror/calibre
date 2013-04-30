@@ -504,6 +504,11 @@ class EbookViewer(MainWindow, Ui_EbookViewer):
         c = config().parse()
         return c.remember_current_page
 
+    def get_dont_show_cover_opt(self):
+        from calibre.gui2.viewer.documentview import config
+        c = config().parse()
+        return c.dont_show_cover
+        
     def print_book(self):
         p = Printing(self.iterator, self)
         p.start_print()
@@ -1002,7 +1007,7 @@ class EbookViewer(MainWindow, Ui_EbookViewer):
         if self.iterator is not None:
             self.save_current_position()
             self.iterator.__exit__()
-        self.iterator = EbookIterator(pathtoebook)
+        self.iterator = EbookIterator(pathtoebook, self.get_dont_show_cover_opt())
         self.open_progress_indicator(_('Loading ebook...'))
         worker = Worker(target=partial(self.iterator.__enter__,
             extract_embedded_fonts_for_qt=True))
