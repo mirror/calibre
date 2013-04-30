@@ -766,6 +766,21 @@ class BooksView(QTableView): # {{{
 
     # }}}
 
+    def keyPressEvent(self, event):
+        # change default home/end scrolling from horizontal to vertical
+        if event.key() == Qt.Key_Home:
+            if event.modifiers() == Qt.ControlModifier:
+                self.horizontalScrollBar().setValue(0)
+            else:
+                self.set_current_row(0)
+        elif event.key() == Qt.Key_End:
+            if event.modifiers() == Qt.ControlModifier:
+                self.horizontalScrollBar().setValue(self.model().columnCount(QModelIndex())-1)
+            else:
+                self.set_current_row(self.model().rowCount(QModelIndex())-1)
+        else:
+            return super(BooksView, self).keyPressEvent(event)
+    
     @property
     def column_map(self):
         return self._model.column_map
