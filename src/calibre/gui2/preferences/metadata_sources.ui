@@ -126,20 +126,48 @@
         </widget>
        </item>
        <item row="1" column="1" colspan="2">
+        <widget class="QCheckBox" name="opt_confirm">
+         <property name="text">
+          <string>Confirm before updating metadata in library</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" colspan="2">
+        <widget class="QCheckBox" name="opt_auto_add">
+         <property name="text">
+          <string>Automatically add missing metadata on import</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1" colspan="2">
+        <widget class="QCheckBox" name="opt_auto_overwrite">
+         <property name="text">
+          <string>Automatically overwrite metadata on import</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1" colspan="2">
+        <widget class="QCheckBox" name="opt_auto_clear">
+         <property name="text">
+          <string>Automatically clear IDs and overwrite metadata on import</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1" colspan="2">
         <widget class="QCheckBox" name="opt_txt_comments">
          <property name="text">
           <string>Convert all downloaded comments to plain &amp;text</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1" colspan="2">
+       <item row="6" column="1" colspan="2">
         <widget class="QCheckBox" name="opt_swap_author_names">
          <property name="text">
           <string>Swap author names from FN LN to LN, FN</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="9" column="1">
         <widget class="QLabel" name="label_2">
          <property name="text">
           <string>Max. number of &amp;tags to download:</string>
@@ -149,10 +177,10 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="2">
+       <item row="9" column="2">
         <widget class="QSpinBox" name="opt_max_tags"/>
        </item>
-       <item row="6" column="1">
+       <item row="10" column="1">
         <widget class="QLabel" name="label_3">
          <property name="text">
           <string>Max. &amp;time to wait after first match is found:</string>
@@ -162,14 +190,14 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="2">
+       <item row="10" column="2">
         <widget class="QSpinBox" name="opt_wait_after_first_identify_result">
          <property name="suffix">
           <string> secs</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="11" column="1">
         <widget class="QLabel" name="label_4">
          <property name="text">
           <string>Max. time to wait after first &amp;cover is found:</string>
@@ -179,14 +207,14 @@
          </property>
         </widget>
        </item>
-       <item row="7" column="2">
+       <item row="11" column="2">
         <widget class="QSpinBox" name="opt_wait_after_first_cover_result">
          <property name="suffix">
           <string> secs</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="1" colspan="2">
+       <item row="8" column="1" colspan="2">
         <widget class="QCheckBox" name="opt_fewer_tags">
          <property name="toolTip">
           <string>&lt;p&gt;Different metadata sources have different sets of tags for the same book. If this option is checked, then calibre will use the smaller tag sets. These tend to be more like genres, while the larger tag sets tend to describe the books content.
@@ -197,7 +225,7 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="1" colspan="2">
+       <item row="7" column="1" colspan="2">
         <widget class="QCheckBox" name="opt_find_first_edition_date">
          <property name="text">
           <string>Use published date of &quot;first edition&quot; (from worldcat.org)</string>

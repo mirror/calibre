@@ -290,6 +290,10 @@ class ConfigWidget(ConfigWidgetBase, Ui_Form):
 
     def genesis(self, gui):
         r = self.register
+        r('confirm', msprefs)
+        r('auto_add', msprefs)
+        r('auto_overwrite', msprefs)
+        r('auto_clear', msprefs)
         r('txt_comments', msprefs)
         r('max_tags', msprefs)
         r('wait_after_first_identify_result', msprefs)

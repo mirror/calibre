@@ -18,6 +18,10 @@ from calibre.utils.icu import capitalize, lower, upper
 from calibre.ebooks.metadata import check_isbn
 
 msprefs = JSONConfig('metadata_sources/global.json')
+msprefs.defaults['confirm'] = True
+msprefs.defaults['auto_add'] = False
+msprefs.defaults['auto_overwrite'] = False
+msprefs.defaults['auto_clear'] = False
 msprefs.defaults['txt_comments'] = False
 msprefs.defaults['ignore_fields'] = []
 msprefs.defaults['user_default_ignore_fields'] = []
